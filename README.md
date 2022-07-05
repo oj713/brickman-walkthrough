@@ -159,7 +159,8 @@ model_data <- brickman::extract_points(brickman::compose_filename("PRESENT"),
   # monthly variables are returned as a list with 12 values - must extract correct month
   mutate_at(VARS[!VARS == "Bathy_depth"], ~.x[[MONTH]]) |>
   ungroup() |>
-  # to treat month as a continuous variable, remove this line
+  # converting month to a factor
+  # remove this line to treat month as continuous ~ requires changes to get_predictions()
   mutate(MONTH = as.factor(MONTH)) 
 
 # input dataset for model
@@ -362,7 +363,7 @@ future_preds <- get_predictions(wkf = workflow, # the fitted workflow
                                 brickman_vars = VARS, # brickman covariates
                                 year = c(NA, 2055, 2075)[3], # year of predictions
                                 scenario = c("PRESENT", "RCP45", "RCP85")[3], # scenario for predictions
-                                augment_preds = FALSE, # include env covariates
+                                augment_preds = FALSE, # include env covariates?
                                 verbose = FALSE, 
                                 downsample = 3) # higher values = lower resolution
 # present predictions
