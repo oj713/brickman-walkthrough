@@ -12,10 +12,10 @@ suppressPackageStartupMessages({
 #' @param year int, the desired year for predictions -- NA if for present day
 #' @param scenario chr, the desired conservation scenario for predictions
 #' @param augment_preds boolean, should covariates be bound to the output predictions?
+#' @param verbose boolean, display some measure of progress?
 #' @param downsample int, the desired resolution of predictions. 0 is original resolution, 
 #'    1 is high resolution, 2 is medium resolution, and 3+ is low resolution. 
 #'    Downsampling will significantly reduce file size of plots and prediction tables. 
-#' @verbose boolean, display some measure of progress?
 #' @return list of 12 dfs named by month, where each df contains predictions. 
 #'   df columns include lat, lon, month, .pred_0, .pred_1, 
 #'   .pred_class, and optional covariates
