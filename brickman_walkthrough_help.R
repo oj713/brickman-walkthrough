@@ -66,10 +66,11 @@ get_predictions <- function(wkf,
   
   if (verbose) {message("Finished brickman variable retrieval")}
   
+  # helper method that generates predictions for a given month
   process_month <- function(mon) {
     if (verbose) {message(paste("Processing month:", mon))}
     
-    # mon_pred is a new input set of data 
+    # creating data to serve as input for model
     # taking brickman data and slicing it to only represent desired month
     # merging this monthly data with bathymetry information
     mon_data <- c(brickman_data |> dplyr::slice(month, mon),
@@ -83,13 +84,15 @@ get_predictions <- function(wkf,
       na.omit()
     
     # determining whether to return augmented data or simply probability
+    
+    # helper method that returns lat, lon, month, and prediction classes
     non_augment <- function(wkf, data) {
       predict(wkf, data, type = "prob") |>
         bind_cols(select(data, lon, lat, MONTH)) |>  
         mutate(.pred_class = (.pred_1 > .5) |> as.numeric() |> as.factor())
     }
     
-    #depending on whether we are augmenting or not
+    # determining whether we're using the non-augment or augment method
     predict_method <- ifelse(augment_preds, augment, non_augment)
     
     # using input data to generate predictions
@@ -127,7 +130,7 @@ get_value_plots <- function(preds_list,
   
   # helper function that generates a plot for a dataframe
   plot_month <- function (preds, mon_name) {
-    # generating plot
+    # ggplot base
     plot_base <- ggplot(preds, aes(x = lon, y = lat, col = .pred_1)) +
       geom_point(cex = pt_size, pch = 15) +
       coord_quickmap(xlim = xlim,
@@ -160,7 +163,8 @@ get_value_plots <- function(preds_list,
     plot
   }
   
-  # for comparison plots, subtract comparison data from original
+  # creating data to plot ~ same as input for raw plots, subtracted 
+  # from comparison for difference plots 
   if (is_comparison) {
     plot_data_list <- 
       purrr::map2(preds_list, 
@@ -196,9 +200,11 @@ get_threshold_plots <- function(preds_list,
                                 pt_size = .3,
                                 xlim = NULL,
                                 ylim = NULL) {
+  # Threshold plots are created by comparing the comparison 
+  # and current presence status
   
-  # naming factor levels 
-  # COMPARISONPRESENCE_PREDSPRESENCE
+  # naming factor levels
+  # names have format COMPARISONPRESENCE_PREDSPRESENCE
   feedstatus <- list(FALSE_FALSE = "No Presence",
                      FALSE_TRUE = "New Presence", 
                      TRUE_FALSE = "Lost Presence", 
