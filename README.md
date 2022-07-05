@@ -49,7 +49,7 @@ be required.
 -   This code is for building a model that takes month as a covariate.
     Predicted output is on a monthly basis. Building an annual model is
     possible, but requires some changes to brickman variable extraction.
--   All code must be run within Bigelow’s ecocast server to function. To run outside of ecocast, the Brickman dataset must be downloaded and its file path specified to the `brickman` package. 
+-   All code must be run within Bigelow’s ecocast server to function. To run outside of ecocast, Brickman datasets must be downloaded and have their path specified within any `brickman` package methods. 
 -   This walkthrough makes use of the base R pipe operator,
     [`|>`](https://www.infoworld.com/article/3621369/use-the-new-r-pipe-built-into-r-41.html).
 -   Questions? Comments? Contact me by email at <ojohnson@bigelow.org>
