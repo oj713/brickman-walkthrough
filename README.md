@@ -9,7 +9,7 @@ Brickman Walkthrough
 -   [Model Evaluation](#model-evaluation)
 -   [Predictions and Plots](#predictions-and-plots)
 
-This repository contains resources a walkthrough for modeling
+This repository contains resources and a walkthrough for modeling
 presence/absence data using North Atlantic covariates from [Brickman et.
 al. 2021](https://online.ucpress.edu/elementa/article/9/1/00055/116900/Projections-of-physical-conditions-in-the-Gulf-of).
 Files included in this repository are:
@@ -34,9 +34,9 @@ salinity, and current vectors.
 
 **Brickman coordinate bounding box:**
 
-xmin xmax ymin ymax
+x = (-101.5, -24.5) 
 
--101.5 -24.5 16.0 75.2
+y = (16.0, 75.2)
 
 This walkthrough provides a guide for building a presence/absence model
 using the Brickman dataset. By training a model with present-day
@@ -146,7 +146,7 @@ for the model.
     the geographically closest Brickman datapoint.
 
 ``` r
-# pairing brickman present data to presence data - this is the input dataset
+# pairing brickman present data to presence data
 model_data <- brickman::extract_points(brickman::compose_filename("PRESENT"), 
                                        vars = VARS, 
                                        pts = pa_data, 
@@ -156,12 +156,13 @@ model_data <- brickman::extract_points(brickman::compose_filename("PRESENT"),
   bind_cols(pa_data) |>
   select(lat, lon, PRESENCE, MONTH, all_of(VARS)) |>
   rowwise() |>
-  # variables are returned as a list with monthly values ~ extract correct month
+  # monthly variables are returned as a list with 12 values - must extract correct month
   mutate_at(VARS[!VARS == "Bathy_depth"], ~.x[[MONTH]]) |>
   ungroup() |>
-  # to treat month as a continuous variable remove this line
+  # to treat month as a continuous variable, remove this line
   mutate(MONTH = as.factor(MONTH)) 
 
+# input dataset for model
 model_data
 ```
 
@@ -253,6 +254,7 @@ Evaluate the model with whatever tools you desire. Some examples of
 analyses are below.
 
 ``` r
+# using augment to retrieve predictions for testing dataset 
 test_results <- augment(workflow, testing_data)
 
 dplyr::glimpse(test_results)
@@ -338,7 +340,7 @@ assist with this portion of the modeling process:
     monthly predictions for a desired scenario.
 -   **`get_value_plots()`** plots presence probabilities in the North
     Atlantic based off a prediction list.
--   **`get_threshold_plots()`** creates plots shwoing how presence
+-   **`get_threshold_plots()`** creates plots showing how presence
     changes between scenarios relative to a desired threshold.
 
 These three methods are defined in `brickman_walkthrough_help.R`.
@@ -401,10 +403,10 @@ There are three pre-defined ways to visualize prediction data:
 
 -   **Raw**: Plot the predicted presence probability of a scenario. This
     is best for understanding where the model places presences and
-    absenses.
+    absenses. 
 -   **Difference**: Plot how presence probability changes between two
     different scenarios. This is best for understanding how raw
-    probabilities shift.
+    probabilities shift between scenarios.
 -   **Threshold**: Plot how presence probability shifts relative to a
     desired threshold. This is best for examining how high-presence
     areas shift between scenarios.
@@ -414,7 +416,7 @@ Use `get_value_plots()` to retrieve raw or difference plots, and use
 methods return a list of 12 `ggplot` objects named by month.
 
 ``` r
-# retrieving raw predictions for the most extreme scenario
+# raw plots
 raw_plots <- get_value_plots(future_preds, # prediction data 
                              title = "RCP85 2075 Predicted Presence Probability",
                              pt_size = .3, # size of points in graph
