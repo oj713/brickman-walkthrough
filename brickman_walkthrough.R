@@ -94,8 +94,6 @@ ggplot(data = auc_monthly,
 
 ### GENERATING PREDICTIONS
 
-downsample_val <- 3
-
 # predictions for the most extreme climate situation: RCP85 2075. 
 rcp85_2075 <- get_predictions(wkf = workflow, 
                               brickman_vars = VARS, 
@@ -103,7 +101,7 @@ rcp85_2075 <- get_predictions(wkf = workflow,
                               scenario = "RCP85", 
                               augment_preds = FALSE, 
                               verbose = FALSE, 
-                              downsample = downsample_val) 
+                              downsample = 3) 
 
 # predictions for the least extreme future climate situation: RCP45 2055
 rcp45_2055 <- get_predictions(wkf = workflow, 
@@ -112,7 +110,7 @@ rcp45_2055 <- get_predictions(wkf = workflow,
                               scenario = "RCP45", 
                               augment_preds = FALSE, 
                               verbose = FALSE, 
-                              downsample = downsample_val)
+                              downsample = 1)
 
 # present day predictions
 present_preds <- get_predictions(wkf = workflow, 
@@ -121,7 +119,7 @@ present_preds <- get_predictions(wkf = workflow,
                                  scenario = "PRESENT",
                                  augment_preds = FALSE,
                                  verbose = FALSE,
-                                 downsample = downsample_val)
+                                 downsample = 3)
 
 ### RETRIEVING PLOTS
 
@@ -136,9 +134,9 @@ raw_plots_rcp85_2075 <- get_value_plots(preds_list = rcp85_2075,
 # This plot is cropped to the Gulf of Maine/Gulf of Saint Lawrence
 raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
                                         title = "RCP45 2055 Predicted Presence Probability",
-                                        pt_size = .3, 
-                                        xlim = NULL,
-                                        ylim = NULL)
+                                        pt_size = .4, 
+                                        xlim = c(-77.0, -42.5), 
+                                        ylim = c(36.5,  56.7))
 
 # difference plots for RCP85 2075 relative to present day
 difference_plots <- get_value_plots(preds_list = rcp85_2075,
