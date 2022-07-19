@@ -372,13 +372,10 @@ First, generate predictions using `get_predictions()`.
     has long runtimes and resulting file sizes of 200+ MB. A
     `downsample` value of 2 or 3 is a better starting point. For more
     information on how `downsample` scales the Brickman data, see
-    [`stars::st_downsample()`](https://r-spatial.github.io/stars/reference/st_downsample.html).
+    [`stars::st_downsample()`](https://r-spatial.github.io/stars/reference/st_downsample.html). This walkthrough does not contain an example of original resolution projections for memory reasons. 
 
 ``` r
 source("brickman_walkthrough_help.R")
-
-# the downsample value is best kept the same for all predictions
-downsample_val <- 3
 
 # predictions for the most extreme climate situation: RCP85 2075. 
 rcp85_2075 <- get_predictions(wkf = workflow, # a fitted workflow used to predict
@@ -387,25 +384,27 @@ rcp85_2075 <- get_predictions(wkf = workflow, # a fitted workflow used to predic
                               scenario = "RCP85", # scenario of predictions
                               augment_preds = FALSE, # bind predictions to covariates?
                               verbose = FALSE, 
-                              downsample = downsample_val) # resolution of predictions
-
-# predictions for the least extreme future climate situation: RCP45 2055
-rcp45_2055 <- get_predictions(wkf = workflow, 
-                              brickman_vars = VARS,
-                              year = 2055, # note changed year and scenario
-                              scenario = "RCP45", 
-                              augment_preds = FALSE, 
-                              verbose = FALSE, 
-                              downsample = downsample_val)
+                              downsample = 3) # resolution of predictions
 
 # present day predictions
+# Since I intend to compare RCP85 2075 to present day, the downsample value must be the same
 present_preds <- get_predictions(wkf = workflow, 
                                  brickman_vars = VARS, 
                                  year = NA, # note that PRESENT is a scenario, not a year
                                  scenario = "PRESENT",
                                  augment_preds = FALSE,
                                  verbose = FALSE,
-                                 downsample = downsample_val)
+                                 downsample = 3)
+
+# predictions for the least extreme future climate situation: RCP45 2055
+# Generating these predictions at a slightly higher resolution
+rcp45_2055 <- get_predictions(wkf = workflow, 
+                              brickman_vars = VARS,
+                              year = 2055, 
+                              scenario = "RCP45", 
+                              augment_preds = FALSE, 
+                              verbose = FALSE, 
+                              downsample = 1) # higher resolution
 
 # list of 12 tibbles of prediction data - 1 per month
 length(rcp85_2075)
@@ -418,20 +417,20 @@ length(rcp85_2075)
 rcp45_2055[["Oct"]]
 ```
 
-    ## # A tibble: 50,073 × 6
+    ## # A tibble: 199,783 × 6
     ##    .pred_0 .pred_1   lon   lat MONTH .pred_class
     ##      <dbl>   <dbl> <dbl> <dbl> <fct> <fct>      
     ##  1   0.825   0.175  6.20  37.0 10    0          
-    ##  2   0.825   0.175  6.21  37.2 10    0          
-    ##  3   0.825   0.175  6.22  37.5 10    0          
-    ##  4   0.825   0.175  6.23  37.7 10    0          
-    ##  5   0.809   0.191  6.24  38.0 10    0          
-    ##  6   0.809   0.191  6.25  38.2 10    0          
-    ##  7   0.825   0.175  6.26  38.5 10    0          
-    ##  8   0.892   0.108  6.27  38.7 10    0          
-    ##  9   0.875   0.125  6.28  39.0 10    0          
-    ## 10   0.825   0.175  6.29  39.2 10    0          
-    ## # … with 50,063 more rows
+    ##  2   0.825   0.175  6.21  37.1 10    0          
+    ##  3   0.825   0.175  6.21  37.2 10    0          
+    ##  4   0.825   0.175  6.22  37.3 10    0          
+    ##  5   0.825   0.175  6.22  37.5 10    0          
+    ##  6   0.825   0.175  6.23  37.6 10    0          
+    ##  7   0.825   0.175  6.23  37.7 10    0          
+    ##  8   0.825   0.175  6.23  37.8 10    0          
+    ##  9   0.809   0.191  6.24  38.0 10    0          
+    ## 10   0.825   0.175  6.24  38.1 10    0          
+    ## # … with 199,773 more rows
 
 There are three pre-defined ways to visualize prediction data:
 
@@ -470,13 +469,14 @@ raw_plots_rcp85_2075[["Oct"]]
 
 ``` r
 # another example of raw plots, now for RCP45 2055 
+# This plot is cropped to the Gulf of Maine / Gulf of St. Lawrence
 raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
                                         title = "RCP45 2055 Predicted Presence Probability",
-                                        pt_size = .3, 
-                                        xlim = NULL, 
-                                        ylim = NULL)
+                                        pt_size = .4, # note adjusted point size
+                                        xlim = c(-77.0, -42.5), # cropping
+                                        ylim = c(36.5,  56.7))
 
-# What are the predicted presence probabilities for RCP45 2055 in May? 
+# What are the predicted presence probabilities for RCP45 2055 in May in the GoM/GSL? 
 raw_plots_rcp45_2055[["May"]]
 ```
 
