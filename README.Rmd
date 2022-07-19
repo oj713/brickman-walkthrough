@@ -29,7 +29,7 @@ The Brickman dataset consists of environmental covariates for a variety of clima
 
  xmin = -101.5, xmax = -24.5, ymin = 16.0, ymax = 75.2 
 
-This walkthrough provides a guide for building a presence/absence model using the Brickman dataset. By training a model with present-day covariates, we can generate high resolution projections for the four available future climate situations. Example projections are at the [end of this walkthrough](#bottom). This code is beginner-friendly and can perform the entire modeling process for a provided dataset, but to improve and modify the model or predictions more coding experience may be required. 
+This walkthrough provides a guide for building a presence/absence model using the Brickman dataset. By training a model with present-day covariates, we can generate high resolution projections for the four available future climate situations. Example projections are in the [Predictions and Plots](#predictions-and-plots) section. This code is beginner-friendly and can perform the entire modeling process for a provided dataset, but to improve and modify the model or predictions more coding experience may be required. 
 
 * This code is for building a model that takes month as a covariate. Predicted output is on a monthly basis. Building an annual model is possible, but requires some changes to Brickman variable extraction. 
 * All code must be run within Bigelow's ecocast server to function. To run outside of ecocast, the Brickman datasets must be downloaded and have their paths specified within `brickman` package methods. 
