@@ -215,7 +215,10 @@ Now, using `workflow` we can generate and visualize monthly predictions for a de
 First, generate predictions using `get_predictions()`. 
 
 * Although we trained the model on present-day data, note that I'm still generating present predictions. The training data likely will not cover the entire extent of the Brickman dataset. By generating present predictions, we can see projections for areas outside of the training data's bounds as well as create a point of reference for how predictions change between present and future climate situations.  
-* The `downsample` argument represents the desired resolution of predictions. 0 represents original resolution (1 datapoint per 1/12 square degrees), and higher values represent lower resolutions. A `downsample` value is 0 is best for high-resolution predictions, but has long runtimes and resulting file sizes of 200+ MB. A `downsample` value of 2 or 3 is a better starting point. For more information on how `downsample` scales the Brickman data, see [`stars::st_downsample()`](https://r-spatial.github.io/stars/reference/st_downsample.html). This walkthrough does not contain an example of original resolution projections for memory reasons. 
+* The `downsample` argument represents the desired resolution of predictions. 0 represents original resolution (1 datapoint per 1/12 square degrees), and higher values represent lower resolutions.  For more information on how `downsample` scales the Brickman data, see [`stars::st_downsample()`](https://r-spatial.github.io/stars/reference/st_downsample.html). **Due to ecocast's RAM limitations, this walkthrough can only support `downsample` values of 1 or higher.** 
+
+      * Original resolution (`downsample = 0`) predictions and plots have large file sizes that will overwhelm ecocast's RAM. To project at original resolution, I'd suggest reworking the `brickman_walkthrough_help.R` methods so that each month of predictions is saved separately to file and plotting methods read in prediction data one month at a time.  
+  
 
 ```{r predictions}
 source("brickman_walkthrough_help.R")
