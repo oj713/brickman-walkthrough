@@ -126,19 +126,19 @@ present_preds <- get_predictions(wkf = workflow,
 ### RETRIEVING PLOTS
 
 # raw plots for RCP85 2075
-raw_plots <- get_value_plots(preds_list = rcp85_2075, 
-                             title = "RCP85 2075 Predicted Presence Probability",
-                             pt_size = .3, 
-                             xlim = NULL,
-                             ylim = NULL)
+raw_plots_rcp85_2075 <- get_value_plots(preds_list = rcp85_2075, 
+                                        title = "RCP85 2075 Predicted Presence Probability",
+                                        pt_size = .3, 
+                                        xlim = NULL,
+                                        ylim = NULL)
 
 # another example of raw plots, now for RCP45 2055 
 # This plot is cropped to the Gulf of Maine/Gulf of Saint Lawrence
 raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
                                         title = "RCP45 2055 Predicted Presence Probability",
-                                        pt_size = 1.1,
-                                        xlim = c(-77.0, -42.5),
-                                        ylim = c(36.5,  56.7))
+                                        pt_size = .3, 
+                                        xlim = NULL,
+                                        ylim = NULL)
 
 # difference plots for RCP85 2075 relative to present day
 difference_plots <- get_value_plots(preds_list = rcp85_2075,

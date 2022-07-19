@@ -41,10 +41,11 @@ xmin = -101.5, xmax = -24.5, ymin = 16.0, ymax = 75.2
 This walkthrough provides a guide for building a presence/absence model
 using the Brickman dataset. By training a model with present-day
 covariates, we can generate high resolution projections for the four
-available future climate situations. Example projections are in the [Predictions and Plots](#predictions-and-plots) section. This code is beginner-friendly and
-can perform the entire modeling process for a provided dataset, but to
-improve and modify the model or predictions more coding experience may
-be required.
+available future climate situations. Example projections are in the
+[Predictions and Plots](#predictions-and-plots) section. This code is
+beginner-friendly and can perform the entire modeling process for a
+provided dataset, but to improve and modify the model or predictions
+more coding experience may be required.
 
 -   This code is for building a model that takes month as a covariate.
     Predicted output is on a monthly basis. Building an annual model is
@@ -454,29 +455,28 @@ methods return a list of 12 `ggplot` objects named by month.
 
 ``` r
 # raw plots for RCP85 2075
-raw_plots <- get_value_plots(preds_list = rcp85_2075, # prediction data 
-                             title = "RCP85 2075 Predicted Presence Probability",
-                              # size of points in graph - optimal value depends on crop and downsample
-                             pt_size = .3, 
-                             xlim = NULL, # optional bounds for plot 
-                             ylim = NULL)
+raw_plots_rcp85_2075 <- get_value_plots(preds_list = rcp85_2075, # prediction data 
+                                        title = "RCP85 2075 Predicted Presence Probability",
+                                         # size of points in graph - optimal value depends on crop and downsample
+                                        pt_size = .3, 
+                                        xlim = NULL, # optional bounds for plot, if zooming in on an area 
+                                        ylim = NULL)
 
 # Where are the predicted presence probabilities for RCP85 2075 in October?
-raw_plots[["Oct"]]
+raw_plots_rcp85_2075[["Oct"]]
 ```
 
 ![](README_files/figure-gfm/plotting-1.png)<!-- -->
 
 ``` r
 # another example of raw plots, now for RCP45 2055 
-# This plot is cropped to the Gulf of Maine/Gulf of Saint Lawrence
 raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
                                         title = "RCP45 2055 Predicted Presence Probability",
-                                        pt_size = 1.1, # note larger point size
-                                        xlim = c(-77.0, -42.5), # cropping
-                                        ylim = c(36.5,  56.7))
+                                        pt_size = .3, 
+                                        xlim = NULL, 
+                                        ylim = NULL)
 
-# What are the predicted presence probabilities for RCP45 2055 in May within the Gulf of Maine/Gulf of St. Lawrence?
+# What are the predicted presence probabilities for RCP45 2055 in May? 
 raw_plots_rcp45_2055[["May"]]
 ```
 
