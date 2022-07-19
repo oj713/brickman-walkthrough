@@ -23,14 +23,6 @@ Files included in this repository are:
     code for three helper functions that can generate predictions and
     plots
 
-<center>
-
-![*Example projection of Calanus presence probability for RCP85 2075. The
-code to construct this projection is laid out in this
-walkthrough.*](README_files/figure-gfm/plotting-1.png)
-
-</center>
-
 ## Overview
 
 The Brickman dataset consists of environmental covariates for a variety
@@ -49,7 +41,7 @@ xmin = -101.5, xmax = -24.5, ymin = 16.0, ymax = 75.2
 This walkthrough provides a guide for building a presence/absence model
 using the Brickman dataset. By training a model with present-day
 covariates, we can generate high resolution projections for the four
-available future climate situations. This code is beginner-friendly and
+available future climate situations. Example projections are at the [end of this walkthrough](#bottom). This code is beginner-friendly and
 can perform the entire modeling process for a provided dataset, but to
 improve and modify the model or predictions more coding experience may
 be required.
@@ -521,3 +513,5 @@ threshold_plots[["Oct"]]
 ```
 
 ![](README_files/figure-gfm/plotting-4.png)<!-- -->
+
+[Jump to Top](#top)
