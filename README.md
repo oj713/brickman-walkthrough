@@ -41,7 +41,7 @@ xmin = -101.5, xmax = -24.5, ymin = 16.0, ymax = 75.2
 This walkthrough provides a guide for building a presence/absence model
 using the Brickman dataset. By training a model with present-day
 covariates, we can generate high resolution projections for the four
-available future climate situations. Example projections are at the [end of this walkthrough](#bottom). This code is beginner-friendly and
+available future climate situations. Example projections are in the [Predictions and Plots](#predictions-and-plots) section. This code is beginner-friendly and
 can perform the entire modeling process for a provided dataset, but to
 improve and modify the model or predictions more coding experience may
 be required.
