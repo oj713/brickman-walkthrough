@@ -240,7 +240,7 @@ present_preds <- get_predictions(wkf = workflow,
                                  downsample = 3)
 
 # predictions for the least extreme future climate situation: RCP45 2055
-# Generating these predictions at a slightly higher resolution
+# Generating these predictions at a higher resolution
 rcp45_2055 <- get_predictions(wkf = workflow, 
                               brickman_vars = VARS,
                               year = 2055, 
