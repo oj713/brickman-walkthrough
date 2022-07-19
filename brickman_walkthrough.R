@@ -2,7 +2,7 @@ source("brickman_walkthrough_help.R")
 
 set.seed(607)
 
-# FOR MONTHLY ANALYSIS
+### DATA PREPARATION
 
 # INITIAL SF OBJECT - SUBSTITUTE YOUR PRESENCE/ABSENCE DATA HERE
 #   PRESENCE: factor (0 or 1)
@@ -30,7 +30,7 @@ model_data <- brickman::extract_points(brickman::compose_filename("PRESENT"),
   ungroup() |>
   mutate(MONTH = as.factor(MONTH))
 
-### PERFORMING MODELLING ###
+### PERFORMING MODELLING 
 
 # performing initial split 
 data_split <- initial_split(model_data, prop = 3/4, strata = PRESENCE)
@@ -56,7 +56,7 @@ workflow <- workflow() |>
   add_model(model) |>
   fit(training_data)
 
-# RESULTS
+# results
 test_results <- augment(workflow, testing_data)
 
 ### COLLECTING METRICS 
@@ -92,48 +92,67 @@ ggplot(data = auc_monthly,
   theme_classic() + 
   theme(panel.grid.major.y = element_line())
 
-# GENERATING PREDICTIONS AND PLOTS
+### GENERATING PREDICTIONS
 
-SCENARIO <- c("PRESENT", "RCP45", "RCP85")[3]
-YEAR <- c(NA, 2055, 2075)[3]
+downsample_val <- 3
 
-preds <- get_predictions(wkf = workflow, 
-                         brickman_vars = VARS, 
-                         year = YEAR, 
-                         scenario = SCENARIO,
-                         augment_preds = FALSE,
-                         verbose = FALSE,
-                         downsample = 3)
+# predictions for the most extreme climate situation: RCP85 2075. 
+rcp85_2075 <- get_predictions(wkf = workflow, 
+                              brickman_vars = VARS, 
+                              year = 2075, 
+                              scenario = "RCP85", 
+                              augment_preds = FALSE, 
+                              verbose = FALSE, 
+                              downsample = downsample_val) 
 
+# predictions for the least extreme future climate situation: RCP45 2055
+rcp45_2055 <- get_predictions(wkf = workflow, 
+                              brickman_vars = VARS,
+                              year = 2055, 
+                              scenario = "RCP45", 
+                              augment_preds = FALSE, 
+                              verbose = FALSE, 
+                              downsample = downsample_val)
+
+# present day predictions
 present_preds <- get_predictions(wkf = workflow, 
                                  brickman_vars = VARS, 
-                                 year = NA,
+                                 year = NA, 
                                  scenario = "PRESENT",
                                  augment_preds = FALSE,
                                  verbose = FALSE,
-                                 downsample = 3)
+                                 downsample = downsample_val)
 
-# raw value plots
-raw_plots <- get_value_plots(preds,
-                             title = "Predicted Presence Probability",
-                             pt_size = .3,
-                             xlim = NULL, 
-                             ylim = NULL,
-                             comparison_list = NULL)
+### RETRIEVING PLOTS
 
-# difference plots
-change_plots <- get_value_plots(preds,
-                                title = "Change in Presence Probability",
-                                pt_size = .3,
-                                xlim = NULL, 
-                                ylim = NULL,
-                                comparison_list = present_preds)
+# raw plots for RCP85 2075
+raw_plots <- get_value_plots(preds_list = rcp85_2075, 
+                             title = "RCP85 2075 Predicted Presence Probability",
+                             pt_size = .3, 
+                             xlim = NULL,
+                             ylim = NULL)
 
-# threshold plots
-threshold_plots <- get_threshold_plots(preds,
-                                       present_preds,
+# another example of raw plots, now for RCP45 2055 
+# This plot is cropped to the Gulf of Maine/Gulf of Saint Lawrence
+raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
+                                        title = "RCP45 2055 Predicted Presence Probability",
+                                        pt_size = 1.1,
+                                        xlim = c(-77.0, -42.5),
+                                        ylim = c(36.5,  56.7))
+
+# difference plots for RCP85 2075 relative to present day
+difference_plots <- get_value_plots(preds_list = rcp85_2075,
+                                    title = "RCP85 2075 Change in Presence Probability",
+                                    pt_size = .3,
+                                    xlim = NULL, 
+                                    ylim = NULL,
+                                    comparison_list = present_preds)
+
+# threshold plots for RCP85 2075, relative to present day
+threshold_plots <- get_threshold_plots(preds_list = rcp85_2075, 
+                                       comparison_list = present_preds, 
                                        threshold = .5,
-                                       title = "Change in Presence (Threshold: .5)",
+                                       title = "Shifts in presence between Present Day and RCP85 2075",
                                        pt_size = .3,
                                        xlim = NULL,
                                        ylim = NULL)

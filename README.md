@@ -9,19 +9,19 @@ Brickman Walkthrough
 -   [Model Evaluation](#model-evaluation)
 -   [Predictions and Plots](#predictions-and-plots)
 
-TEST EDIT LINE
-
 This repository contains resources and a walkthrough for modeling
-presence/absence data using North Atlantic covariates from [Brickman et.
+presence/absence data in North Atlantic using covariates from [Brickman
+et.
 al. 2021](https://online.ucpress.edu/elementa/article/9/1/00055/116900/Projections-of-physical-conditions-in-the-Gulf-of).
 Files included in this repository are:
 
 -   **README.md** (this document): Overview and walkthrough of Brickman
     modeling process
--   **brickman_walkthrough.R**: the complete R code used in the modeling
-    walkthrough
--   **brickman_walkthrough_help.R**: code for three helper functions
-    meant to assist with generating predictions and plots
+-   [**brickman_walkthrough.R**](https://github.com/oj713/brickman-walkthrough/blob/main/brickman_walkthrough.R):
+    the complete R code used in the modeling walkthrough
+-   [**brickman_walkthrough_help.R**](https://github.com/oj713/brickman-walkthrough/blob/main/brickman_walkthrough_help.R):
+    code for three helper functions that can generate predictions and
+    plots
 
 ## Overview
 
@@ -36,22 +36,22 @@ salinity, and current vectors.
 
 **Brickman coordinate bounding box:**
 
-x = (-101.5, -24.5) 
-
-y = (16.0, 75.2)
+xmin = -101.5, xmax = -24.5, ymin = 16.0, ymax = 75.2
 
 This walkthrough provides a guide for building a presence/absence model
 using the Brickman dataset. By training a model with present-day
-covariates, we can generate high resolution predictions for the four
-available future climate scenarios. This code is beginner-friendly and
-can perform the entire modeling process for a provided dataset, but to
-improve and modify the model or predictions more coding experience may
-be required.
+covariates, we can generate high resolution projections for the four
+available future climate situations. Example projections are at the
+bottom of this page. This code is beginner-friendly and can perform the
+entire modeling process for a provided dataset, but to improve and
+modify the model or predictions more coding experience may be required.
 
 -   This code is for building a model that takes month as a covariate.
     Predicted output is on a monthly basis. Building an annual model is
-    possible, but requires some changes to brickman variable extraction.
--   All code must be run within Bigelow’s ecocast server to function. To run outside of ecocast, Brickman datasets must be downloaded and have their path specified within any `brickman` package methods. 
+    possible, but requires some changes to Brickman variable extraction.
+-   All code must be run within Bigelow’s ecocast server to function. To
+    run outside of ecocast, the Brickman datasets must be downloaded and
+    have their paths specified within `brickman` package methods.
 -   This walkthrough makes use of the base R pipe operator,
     [`|>`](https://www.infoworld.com/article/3621369/use-the-new-r-pipe-built-into-r-41.html).
 -   Questions? Comments? Contact me by email at <ojohnson@bigelow.org>
@@ -85,7 +85,8 @@ following columns:
 -   `MONTH`: numeric, 1 through 12
 
 Make sure that all datapoints in `pa_data` are within the Brickman
-coordinate bounding box. To convert a dataframe to `sf`, use
+coordinate bounding box (see [Overview](#overview)). To convert a
+dataframe to `sf`, use
 [`st_as_sf()`](https://www.rdocumentation.org/packages/sf/versions/1.0-7/topics/st_as_sf).
 
 For the walkthrough, we will be using *C. Finmarchicus* data collected
@@ -97,6 +98,7 @@ individuals per square meter.
 ``` r
 library(ecomon) # not needed if not working with ecomon data
 
+# substitute your own dataset in here
 pa_data <- ecomon::read_staged(species = "calfin", form = "sf") |>
   transmute(PRESENCE = (total_m2 > 10000) |> as.numeric() |> as.factor(),
             MONTH = lubridate::month(date))
@@ -141,11 +143,12 @@ VARS <- c("Bathy_depth", "Xbtm", "MLD", "Sbtm", "SSS", "SST", "Tbtm", "U", "V")
 ```
 
 Finally, use the `brickman::extract_points()` method to match `pa_data`
-to present-day Brickman covariates and create the testing/training data
-for the model.
+to present-day Brickman covariates and create the input dataset for the
+model.
 
--   `pa_data` is matched to Brickman data by extracting covariates from
-    the geographically closest Brickman datapoint.
+-   `pa_data` is matched to Brickman covariates by pairing each
+    presence/absence location with the geographically closest Brickman
+    datapoint.
 
 ``` r
 # pairing brickman present data to presence data
@@ -165,7 +168,7 @@ model_data <- brickman::extract_points(brickman::compose_filename("PRESENT"),
   # remove this line to treat month as continuous ~ requires changes to get_predictions()
   mutate(MONTH = as.factor(MONTH)) 
 
-# input dataset for model
+# input dataset for workflow
 model_data
 ```
 
@@ -196,12 +199,14 @@ recipes, models, or splitting techniques as desired.
     [`Tidymodels Tutorial`](https://oj713.github.io/tidymodels/).
 
 ``` r
-# performing initial split 
+# performing the initial testing/training split
+# training data will be used to train the model, and the testing data is used
+#   to assess model performance
 data_split <- initial_split(model_data, prop = 3/4, strata = PRESENCE)
 training_data <- training(data_split)
 testing_data <- testing(data_split)
 
-# example preprocessing recipe
+# example recipe: formula and preprocessing steps for the dataset. 
 recipe <- recipe(PRESENCE ~ ., data = training_data) |>
   update_role(lat, lon, U, V, new_role = "ID") |>
   step_mutate(Vel = sqrt(U^2 + V^2), role = "predictor") |>
@@ -209,7 +214,7 @@ recipe <- recipe(PRESENCE ~ ., data = training_data) |>
   step_zv(all_predictors()) |>
   step_normalize(all_numeric_predictors())
 
-# example model: random forest
+# example model specification: random forest
 model <- rand_forest(trees = 15) |>
   set_engine("ranger") |>
   set_mode("classification")
@@ -257,9 +262,10 @@ Evaluate the model with whatever tools you desire. Some examples of
 analyses are below.
 
 ``` r
-# using augment to retrieve predictions for testing dataset 
+# using augment to make predictions for the test dataset 
 test_results <- augment(workflow, testing_data)
 
+# note .pred_class, .pred_0 and .pred_1 columns
 dplyr::glimpse(test_results)
 ```
 
@@ -282,11 +288,12 @@ dplyr::glimpse(test_results)
     ## $ .pred_0     <dbl> 0.99259259, 0.70500000, 0.99259259, 1.00000000, 0.85333333…
     ## $ .pred_1     <dbl> 0.007407407, 0.295000000, 0.007407407, 0.000000000, 0.1466…
 
--   `Yardstick` provides methods to easily collect performance metrics.
+-   [`Yardstick`](https://yardstick.tidymodels.org/) provides methods to
+    easily collect performance metrics.
 
 ``` r
 # defining and retrieving desired metrics
-pa_metrics <- metric_set(roc_auc, sens, spec, accuracy)
+pa_metrics <- yardstick::metric_set(roc_auc, sens, spec, accuracy)
 pa_metrics(test_results, 
            truth = PRESENCE, 
            estimate = .pred_class, 
@@ -331,136 +338,178 @@ ggplot(data = auc_monthly,
   theme(panel.grid.major.y = element_line())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/auc%20monthly-1.png)<!-- -->
 
 ## Predictions and Plots
 
 Now, using `workflow` we can generate and visualize monthly predictions
-for a desired Brickman scenario. I’ve created three helper functions to
-assist with this portion of the modeling process:
+for a desired Brickman climate sitation.
+[`brickman_walkthrough_help.R`](https://github.com/oj713/brickman-walkthrough/blob/main/brickman_walkthrough_help.R)
+defines three helper functions to assist with this portion of the
+modeling process:
 
 -   **`get_predictions()`** takes a workflow and returns a list of
-    monthly predictions for a desired scenario.
--   **`get_value_plots()`** plots presence probabilities in the North
-    Atlantic based off a prediction list.
+    by-month predictions for a desired climate situation.
+-   **`get_value_plots()`** creates plots presence probabilities from a
+    prediction list.
 -   **`get_threshold_plots()`** creates plots showing how presence
-    changes between scenarios relative to a desired threshold.
-
-These three methods are defined in `brickman_walkthrough_help.R`.
+    shifts between climate situations relative to a desired threshold.
 
 First, generate predictions using `get_predictions()`.
 
 -   Although we trained the model on present-day data, note that I’m
     still generating present predictions. The training data likely will
     not cover the entire extent of the Brickman dataset. By generating
-    present predictions, we can see predictions for areas outside of the
+    present predictions, we can see projections for areas outside of the
     training data’s bounds as well as create a point of reference for
-    how predictions change between present and future scenarios.
+    how predictions change between present and future climate
+    situations.  
+-   The `downsample` argument represents the desired resolution of
+    predictions. 0 represents original resolution (1 datapoint per 1/12
+    square degrees), and higher values represent lower resolutions. A
+    `downsample` value is 0 is best for high-resolution predictions, but
+    has long runtimes and resulting file sizes of 200+ MB. A
+    `downsample` value of 2 or 3 is a better starting point. For more
+    information on how `downsample` scales the Brickman data, see
+    [`stars::st_downsample()`](https://r-spatial.github.io/stars/reference/st_downsample.html).
 
 ``` r
 source("brickman_walkthrough_help.R")
 
-# predictions for the most extreme climate scenario: RCP85 2075. 
-future_preds <- get_predictions(wkf = workflow, # the fitted workflow
-                                brickman_vars = VARS, # brickman covariates
-                                year = c(NA, 2055, 2075)[3], # year of predictions
-                                scenario = c("PRESENT", "RCP45", "RCP85")[3], # scenario for predictions
-                                augment_preds = FALSE, # include env covariates?
-                                verbose = FALSE, 
-                                downsample = 3) # higher values = lower resolution
-# present predictions
+# the downsample value is best kept the same for all predictions
+downsample_val <- 3
+
+# predictions for the most extreme climate situation: RCP85 2075. 
+rcp85_2075 <- get_predictions(wkf = workflow, # a fitted workflow used to predict
+                              brickman_vars = VARS, # needed brickman covariates
+                              year = 2075, # year of predictions
+                              scenario = "RCP85", # scenario of predictions
+                              augment_preds = FALSE, # bind predictions to covariates?
+                              verbose = FALSE, 
+                              downsample = downsample_val) # resolution of predictions
+
+# predictions for the least extreme future climate situation: RCP45 2055
+rcp45_2055 <- get_predictions(wkf = workflow, 
+                              brickman_vars = VARS,
+                              year = 2055, # note changed year and scenario
+                              scenario = "RCP45", 
+                              augment_preds = FALSE, 
+                              verbose = FALSE, 
+                              downsample = downsample_val)
+
+# present day predictions
 present_preds <- get_predictions(wkf = workflow, 
                                  brickman_vars = VARS, 
-                                 year = NA, 
+                                 year = NA, # note that PRESENT is a scenario, not a year
                                  scenario = "PRESENT",
                                  augment_preds = FALSE,
                                  verbose = FALSE,
-                                 downsample = 3)
-# list of 12 
-length(future_preds)
+                                 downsample = downsample_val)
+
+# list of 12 tibbles of prediction data - 1 per month
+length(rcp85_2075)
 ```
 
     ## [1] 12
 
 ``` r
-# can index by number or by 3 letter abbreviation of desired month
-future_preds[["Oct"]]
+# can index by month number or by 3 letter abbreviation of desired month
+rcp45_2055[["Oct"]]
 ```
 
     ## # A tibble: 50,073 × 6
     ##    .pred_0 .pred_1   lon   lat MONTH .pred_class
     ##      <dbl>   <dbl> <dbl> <dbl> <fct> <fct>      
-    ##  1   0.825  0.175   6.20  37.0 10    0          
-    ##  2   0.825  0.175   6.21  37.2 10    0          
-    ##  3   0.825  0.175   6.22  37.5 10    0          
-    ##  4   0.825  0.175   6.23  37.7 10    0          
-    ##  5   0.819  0.181   6.24  38.0 10    0          
-    ##  6   0.903  0.0972  6.25  38.2 10    0          
-    ##  7   0.903  0.0972  6.26  38.5 10    0          
-    ##  8   0.903  0.0972  6.27  38.7 10    0          
-    ##  9   0.892  0.108   6.28  39.0 10    0          
-    ## 10   0.825  0.175   6.29  39.2 10    0          
+    ##  1   0.825   0.175  6.20  37.0 10    0          
+    ##  2   0.825   0.175  6.21  37.2 10    0          
+    ##  3   0.825   0.175  6.22  37.5 10    0          
+    ##  4   0.825   0.175  6.23  37.7 10    0          
+    ##  5   0.809   0.191  6.24  38.0 10    0          
+    ##  6   0.809   0.191  6.25  38.2 10    0          
+    ##  7   0.825   0.175  6.26  38.5 10    0          
+    ##  8   0.892   0.108  6.27  38.7 10    0          
+    ##  9   0.875   0.125  6.28  39.0 10    0          
+    ## 10   0.825   0.175  6.29  39.2 10    0          
     ## # … with 50,063 more rows
 
 There are three pre-defined ways to visualize prediction data:
 
--   **Raw**: Plot the predicted presence probability of a scenario. This
-    is best for understanding where the model places presences and
-    absenses. 
--   **Difference**: Plot how presence probability changes between two
-    different scenarios. This is best for understanding how raw
-    probabilities shift between scenarios.
+-   **Raw**: Plot the predicted presence probability for a climate
+    situation. This is best for understanding where a model places
+    presences and absences.
+-   **Difference**: Plot the difference in presence probability between
+    two different climate situations. This is best for understanding how
+    raw probabilities may shift over time.
 -   **Threshold**: Plot how presence probability shifts relative to a
     desired threshold. This is best for examining how high-presence
-    areas shift between scenarios.
+    areas shift between climate situations.
 
 Use `get_value_plots()` to retrieve raw or difference plots, and use
 `get_threshold_plots()` to retrieve threshold plots. Both of these
 methods return a list of 12 `ggplot` objects named by month.
 
+-   If creating a difference or threshold plot, ensure that the
+    downsample value is the same for both the original and comparison
+    predictions.
+
 ``` r
-# raw plots
-raw_plots <- get_value_plots(future_preds, # prediction data 
+# raw plots for RCP85 2075
+raw_plots <- get_value_plots(preds_list = rcp85_2075, # prediction data 
                              title = "RCP85 2075 Predicted Presence Probability",
-                             pt_size = .3, # size of points in graph
+                              # size of points in graph - optimal value depends on crop and downsample
+                             pt_size = .3, 
                              xlim = NULL, # optional bounds for plot 
                              ylim = NULL)
 
-# Examining the predicted presence for October
+# Where are the predicted presence probabilities for RCP85 2075 in October?
 raw_plots[["Oct"]]
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/plotting-1.png)<!-- -->
 
 ``` r
-# difference plots
-difference_plots <- get_value_plots(future_preds,
+# another example of raw plots, now for RCP45 2055 
+# This plot is cropped to the Gulf of Maine/Gulf of Saint Lawrence
+raw_plots_rcp45_2055 <- get_value_plots(preds_list = rcp45_2055, 
+                                        title = "RCP45 2055 Predicted Presence Probability",
+                                        pt_size = 1.1, # note larger point size
+                                        xlim = c(-77.0, -42.5), # cropping
+                                        ylim = c(36.5,  56.7))
+
+# What are the predicted presence probabilities for RCP45 2055 in May within the Gulf of Maine/Gulf of St. Lawrence?
+raw_plots_rcp45_2055[["May"]]
+```
+
+![](README_files/figure-gfm/plotting-2.png)<!-- -->
+
+``` r
+# difference plots for RCP85 2075 relative to present day
+difference_plots <- get_value_plots(preds_list = rcp85_2075,
                                     title = "RCP85 2075 Change in Presence Probability",
                                     pt_size = .3,
                                     xlim = NULL, 
                                     ylim = NULL,
-                                    # comparison argument: comparing to present day
+                                    # optional comparison argument indicates need for 
                                     comparison_list = present_preds)
 
-# Examining the predicted change in presence for October
-# Note that the white area in gulf of maine indicates values beyond the scale
+# How have probabilities shifted between present day and RCP85 2075?
 difference_plots[["Oct"]]
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
+![](README_files/figure-gfm/plotting-3.png)<!-- -->
 
 ``` r
-# threshold
-threshold_plots <- get_threshold_plots(future_preds, # target prediction data
-                                       present_preds, # comparison prediction data
+# threshold plots for RCP85 2075, relative to present day
+threshold_plots <- get_threshold_plots(preds_list = rcp85_2075, # target prediction data
+                                       comparison_list = present_preds, # comparison prediction data
                                        threshold = .5, # threshold for presence
-                                       title = "Change in Presence (Threshold: .5)",
+                                       title = "Shifts in presence between Present Day and RCP85 2075",
                                        pt_size = .3,
                                        xlim = NULL,
                                        ylim = NULL)
 
-# Examining how high presence areas shift between present and future 
+# Where are the new, lost, and maintained presence areas in RCP85 2075 relative to present day?
 threshold_plots[["Oct"]]
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-3.png)<!-- -->
+![](README_files/figure-gfm/plotting-4.png)<!-- -->

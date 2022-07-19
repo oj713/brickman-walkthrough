@@ -146,13 +146,15 @@ get_value_plots <- function(preds_list,
     # desired color scheme depends on whether this is raw or comparison plot
     if (is_comparison) {
       plot <- plot_base +
-        scale_color_gradientn(limits = c(-.7, .7),
+        scale_color_gradientn(limits = c(-.9, .9),
                               colors = c("midnightblue",
+                                         "midnightblue",
                                          "dodgerblue3",
                                          "deepskyblue1",
                                          "gray94", 
                                          "goldenrod1",
-                                         "darkorange1", 
+                                         "darkorange1",
+                                         "orangered3",
                                          "orangered3"),
                               na.value = "white")
     } else {
