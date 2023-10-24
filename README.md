@@ -1,4 +1,4 @@
-Brickman Walkthrough
+Environmental Modeling Walkthrough using Brickman's Downscaled IPCC Covariates
 ================
 
 **Table of Contents**
